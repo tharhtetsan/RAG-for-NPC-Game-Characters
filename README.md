@@ -1,7 +1,7 @@
 # RAG-for-NPC-Game-Characters
 
 #### We use Basic RAG architecture in this project 
-!["RAG "](images/rag.png)
+!["RAG "](./images/rag_explain_ths.png)
 
 
 #### Demo UI
