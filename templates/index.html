@@ -1,0 +1,148 @@
+<!-- query.html -->
+<html> 
+<head> 
+	<title>Query</title> 
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+	<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.0/dist/js.cookie.min.js"></script> 
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script> 
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous"> 
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous"> 
+	<script> 
+		$(document).ready(function() { 
+			// Send the form on enter keypress and avoid if shift is pressed 
+			$('#prompt').keypress(function(event) { 
+				if (event.keyCode === 13 && !event.shiftKey) { 
+					event.preventDefault(); 
+					$('form').submit(); 
+				} 
+			}); 
+			$('form').on('submit', function(event) { 
+				event.preventDefault(); 
+			// get the CSRF token from the cookie 
+			var csrftoken = Cookies.get('csrftoken'); 
+			
+			// set the CSRF token in the AJAX headers 
+			$.ajaxSetup({ 
+				headers: { 'X-CSRFToken': csrftoken } 
+			}); 
+				// Get the prompt 
+				var prompt = $('#prompt').val(); 
+				var universe =document.getElementById('universe').value;
+                var play_character =document.getElementById('play_character').value;
+                var npc_character = document.getElementById('npc_characters').value;
+                var npc_feeling =document.getElementById('npc_feelings').value;
+
+				var dateTime = new Date(); 
+				var time = dateTime.toLocaleTimeString(); 
+				// Add the prompt to the response div 
+				$('#response').append('<p id="GFG1">('+ time + ') <i class="bi bi-person"></i>: ' + prompt + '</p>'); 
+				$('#response #GFG1').css({"color": "green", "width": "90%", "float": "left"}); 
+				// Clear the prompt 
+				$('#prompt').val(''); 
+				$.ajax({ 
+					url: '/', 
+					type: 'POST', 
+					data: {
+						universe:universe,
+						prompt: prompt,
+                        play_character:play_character,
+                        npc_character:npc_character,
+                        npc_feeling:npc_feeling
+                    }, 
+					dataType: 'json', 
+					success: function(data) { 
+						$('#response').append('<p id="GFG2">('+ time + ') <i class="bi bi-robot"></i>: ' + data.response + '</p>'); 
+						$('#response #GFG2').css({"color": "red", "width": "90%", "float": "right"}); 
+					} 
+				}); 
+			}); 
+		}); 
+	</script> 
+</head> 
+<body> 
+    <div class="container p-3 col-md-12"> 
+        <label for="Choose a Universe:" class="form-label"><strong>Choose a Universe: </strong></label> 
+        <select id="universe">
+            <option value="Game of Thrones">Game of Thrones</option>
+            <option value="Wizard of Oz">Wizard of Oz</option>
+        </select>
+    
+        <label for="Choose Character:" class="form-label"><strong>Choose Character:</strong></label> 
+        <select id="play_character"></select>
+        <br>
+
+
+        <label for="NPC Character:" class="form-label"><strong>NPC Character:</strong></label>         
+        <select id="npc_characters"></select>
+        <label for="NPC Character Mood:" class="form-label"><strong>NPC Character Mood:</strong></label> 
+        <select id="npc_feelings"></select>
+    
+
+
+
+        <script>
+            document.getElementById('universe').addEventListener('change', function() {
+                var selectedUniverse = this.value;
+                var playCharacterSelect = document.getElementById('play_character');
+                var npcCharactersSelect = document.getElementById('npc_characters');
+                var npcFeelingsSelect = document.getElementById('npc_feelings');
+    
+                // Clear previous options
+                playCharacterSelect.innerHTML = '';
+                npcCharactersSelect.innerHTML = '';
+                npcFeelingsSelect.innerHTML = '';
+    
+                // Fetch characters based on selected universe
+                fetch('/get_characters', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'universe=' + selectedUniverse
+                })
+                .then(response => response.json())
+                .then(data => {
+                    data.play_character.forEach(character => {
+                        var option = document.createElement('option');
+                        option.text = character;
+                        playCharacterSelect.add(option);
+                    });
+                    data.npc_characters.forEach(character => {
+                        var option = document.createElement('option');
+                        option.text = character;
+                        npcCharactersSelect.add(option);
+                    });
+                    data.npc_feelings.forEach(character => {
+                        var option = document.createElement('option');
+                        option.text = character;
+                        npcFeelingsSelect.add(option);
+                    })
+
+                });
+            });
+        </script>
+
+
+
+                
+
+	
+        
+		<div class="mb-3"> 
+			<form method="post" action=""> 
+				
+				<label for="prompt" class="form-label"><strong>Question: </strong></label> 
+				<textarea class="form-control" type="textarea" id="prompt" name="prompt" rows="2"></textarea> 
+				<br> 
+				<button class="btn btn-primary " type="submit">Submit</button> 
+			</form> 
+		</div> 
+		<br> 
+		<div class="mb-3"> 
+			<h6>Response:</h6> 
+			<div class="container border overflow-auto h-50" id="response"></div> 
+			
+		</div> 
+	</div> 
+</body> 
+</html> 
