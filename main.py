@@ -29,6 +29,7 @@ def get_characters():
 				'Professor Marvel', 'Almira Gluch', 'Uncle Henry']
 
 		path = os.getcwd()+"/corpus/wizard_of_oz/faiss_index"
+		print("path : ",path)
 		chatbot_obj = faiss_rag(path)
 		print(path)
 	
