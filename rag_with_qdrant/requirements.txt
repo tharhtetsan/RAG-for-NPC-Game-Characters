@@ -1,0 +1,9 @@
+aiofiles
+transformers==4.42.4
+qdrant-client
+fastembed
+fastapi
+streamlit
+openai
+uvicorn
+torch
