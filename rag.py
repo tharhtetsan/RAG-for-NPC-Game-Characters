@@ -3,7 +3,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from transformers import AutoTokenizer, pipeline
 from openai import OpenAI
-
+import numpy as np
 
 
 class faiss_rag :
@@ -35,21 +35,23 @@ class faiss_rag :
         model_name = "facebook/bart-large-cnn"
         tokenizer = AutoTokenizer.from_pretrained(model_name, padding=True, truncation=True, max_length=512)
         summarizer =pipeline(
-            "summarization",
+            "text-generation",
             model=model_name,
             tokenizer=tokenizer,
             return_tensors='pt'
         )
+
+        
         return tokenizer, summarizer
     
 
     # Combine RAG similary search and summarizer
     def prep4Prompt(self,question:str):
-        docs = self.loaded_retriever.get_relevant_documents(question)
+        docs = self.loaded_retriever.invoke(question)
         line = docs[0].page_content
         tokenizer, summarizer = self.summarizeRag()
         response = summarizer(line, max_length=200, min_length=50, do_sample=False)
-        token_ids = response[0]['summary_token_ids'].numpy()
+        token_ids = np.array(response[0]['generated_token_ids'])
         decoded_text = tokenizer.decode(token_ids)
         cleaned_text = re.sub(r'[^\w\s.,;\'"\-?!]', '', decoded_text)
         return cleaned_text
